@@ -7,12 +7,12 @@ from typing import TYPE_CHECKING, Protocol
 import librosa
 import numpy as np
 
+from beets import util
 from beets.plugins import BeetsPlugin
-from beets.ui import Subcommand, UserError, should_write
+from beets.ui import Subcommand, should_write
 from beets.util.deprecation import deprecate_for_user
 
 if TYPE_CHECKING:
-    import optparse
     from collections.abc import Iterable
 
     from beets.importer import ImportTask
@@ -21,19 +21,6 @@ if TYPE_CHECKING:
 
 class AutoBPMCLIOpts(Protocol):
     limit: int | None
-
-
-def _set_start_bpm(
-    option: optparse.Option,
-    opt_str: str,
-    value: int,
-    parser: optparse.OptionParser,
-) -> None:
-    """Validate and store the initial BPM guess."""
-    if value <= 0:
-        raise UserError(f"{opt_str} argument must be a positive integer")
-    assert option.dest is not None
-    setattr(parser.values, option.dest, value)
 
 
 class AutoBPMPlugin(BeetsPlugin):
@@ -85,7 +72,7 @@ class AutoBPMPlugin(BeetsPlugin):
             dest="beat_track_kwargs.start_bpm",
             type="int",
             action="callback",
-            callback=_set_start_bpm,
+            callback=util.positive_int_option_callback,
             help=(
                 "Initial BPM guess for beat tracking "
                 "(overrides beat_track_kwargs.start_bpm)"
